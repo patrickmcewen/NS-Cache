@@ -279,6 +279,7 @@ int main(int argc, char *argv[])
             cout << "Could not open file " << outputFileName << "!" << endl;
             exit(-1);
         }
+        Result::printCsvHeader(outputFile);
 	}
 
     int numCellTypes = inputParameter->fileMemCell.size();
@@ -705,6 +706,7 @@ int nvsim(ofstream& outputFile, string inputFileName, long long& numSolution, Re
 				numSolution++;
 				UPDATE_BEST_DATA;
 				tempResult.printToCsvFile(outputFile);
+			outputFile << "\n";
 			}
 			delete dataBank;
 		}

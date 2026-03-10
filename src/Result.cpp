@@ -1597,6 +1597,40 @@ void Result::printAsCacheToFile(CacheAccessMode cacheAccessMode, const string &F
     outFile.close();
 }
 
+void Result::printCsvHeader(ofstream &outputFile) {
+	/* Cache-level summary */
+	outputFile << "AccessMode,";
+	outputFile << "CacheArea_um2,";
+	outputFile << "HitLatency_ns,MissLatency_ns,WriteLatency_ns,RefreshLatency_ns,";
+	outputFile << "HitDynamicEnergy_nJ,MissDynamicEnergy_nJ,WriteDynamicEnergy_nJ,RefreshDynamicEnergy_nJ,";
+	outputFile << "Leakage_mW,RefreshPower_W,";
+
+	/* Per-array block (data then tag) */
+	for (const char *prefix : {"Data_", "Tag_"}) {
+		outputFile << prefix << "NumRowSubArray," << prefix << "NumColSubArray," << prefix << "StackedDies,";
+		outputFile << prefix << "ActiveSubArrayPerCol," << prefix << "ActiveSubArrayPerRow,";
+		outputFile << prefix << "NumRowMat," << prefix << "NumColMat,";
+		outputFile << prefix << "ActiveMatPerCol," << prefix << "ActiveMatPerRow,";
+		outputFile << prefix << "MatRows," << prefix << "MatCols,";
+		outputFile << prefix << "MuxSenseAmp," << prefix << "MuxOutputLev1," << prefix << "MuxOutputLev2,";
+		outputFile << prefix << "NumRowPerSet,";
+		outputFile << prefix << "LocalWireType," << prefix << "LocalRepeater," << prefix << "LocalLowSwing,";
+		outputFile << prefix << "GlobalWireType," << prefix << "GlobalRepeater," << prefix << "GlobalLowSwing,";
+		outputFile << prefix << "AreaOptimization,";
+		outputFile << prefix << "BankHeight_um," << prefix << "BankWidth_um," << prefix << "BankArea_um2,";
+		outputFile << prefix << "SubarrayHeight_um," << prefix << "SubarrayWidth_um," << prefix << "SubarrayArea_um2,";
+		outputFile << prefix << "MatHeight_um," << prefix << "MatWidth_um," << prefix << "MatArea_um2,";
+		outputFile << prefix << "ArrayEfficiency_pct,";
+		outputFile << prefix << "ReadLatency_ns," << prefix << "WriteLatency_ns," << prefix << "RefreshLatency_ns,";
+		outputFile << prefix << "ReadDynamicEnergy_pJ," << prefix << "WriteDynamicEnergy_pJ," << prefix << "RefreshDynamicEnergy_pJ,";
+		outputFile << prefix << "Leakage_mW," << prefix << "RefreshPower_W,";
+		outputFile << prefix << "StackedMemTiers,";
+	}
+
+	outputFile << "CombinedMatLeakage_W,CombinedMatArea_um2";
+	outputFile << "\n";
+}
+
 void Result::printToCsvFile(ofstream &outputFile) {
 	cout << "in print output csv loop" << endl;
 	outputFile << bank->numRowSubArray << "," << bank->numColumnSubArray << "," << bank->stackedDieCount << "," << bank->numActiveSubArrayPerColumn << "," << bank->numActiveSubArrayPerRow << ",";
@@ -1754,7 +1788,6 @@ void Result::printToCsvFile(ofstream &outputFile) {
         outputFile << "0,";
     }
 
-	outputFile << "\n";
 }
 
 void Result::printAsCacheToCsvFile(Result &tagResult, CacheAccessMode cacheAccessMode, ofstream &outputFile) {

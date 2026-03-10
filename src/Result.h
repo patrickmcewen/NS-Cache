@@ -38,6 +38,7 @@ public:
     bool nearReference(double reference, double measured);
 	void printToCsvFile(ofstream &outputFile);
 	void printAsCacheToCsvFile(Result &tagBank, CacheAccessMode cacheAccessMode, ofstream &outputFile);
+	static void printCsvHeader(ofstream &outputFile);
 	bool compareAndUpdate(Result &newResult);
     string printOptimizationTarget();
 
