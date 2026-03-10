@@ -70,6 +70,8 @@ public:
 
 	double predecoderLatency;	/* The maximum latency of all the predecoder blocks, Unit: s */
     double areaAllLogicBlocks;
+	double arrayArea;		/* Pure memory cell array area (summed across all mats), Unit: m^2 */
+	double peripheralArea;	/* Total peripheral area (mat + subarray level), Unit: m^2 */
 
 	Mat mat;
 	PredecodeBlock rowPredecoderBlock1;

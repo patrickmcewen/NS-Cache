@@ -664,8 +664,8 @@ void Mat::CalculateArea() {
 		stackedMemTiers = 1;
 
 		if (inputParameter->peripheralUnderArray) {
-			double arrayArea = lenWordline * lenBitline;
-			double peripheralArea = area - arrayArea;
+			arrayArea = lenWordline * lenBitline;
+			peripheralArea = area - arrayArea;
 			double aspectRatio = height / width;
 			area = MAX(arrayArea, peripheralArea);
 			height = sqrt(area * aspectRatio);

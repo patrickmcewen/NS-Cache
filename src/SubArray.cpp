@@ -244,6 +244,16 @@ void SubArray::CalculateArea() {
 		}
 
 		area = height * width;
+
+		if (inputParameter->peripheralUnderArray) {
+			/* Take max of total mat array area vs. all peripheral areas (mat + subarray level). */
+			arrayArea = mat.arrayArea * numRowMat * numColumnMat;
+			peripheralArea = mat.peripheralArea * numRowMat * numColumnMat + areaAllLogicBlocks;
+			double aspectRatio = height / width;
+			area = MAX(arrayArea, peripheralArea);
+			height = sqrt(area * aspectRatio);
+			width = area / height;
+		}
 	}
 }
 

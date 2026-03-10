@@ -592,6 +592,7 @@ void BankWithHtree::CalculateArea() {
 		}
 
         /* Initialize TSV connections. */
+		double areaTSV = 0;
         if (stackedDieCount > 1 /*&& partitionGranularity == 0*/) {
             tsvArray.CalculateArea();
 
@@ -610,8 +611,19 @@ void BankWithHtree::CalculateArea() {
             tsvArray.numAccessBits = (int)((double)(numControlBits + numAddressBits + blockSize) * redundancyFactor);
 
             // We're not adding in a particular dimension (width/height) so increase the total
-            area += tsvArray.numTotalBits * tsvArray.area;
+            areaTSV += tsvArray.numTotalBits * tsvArray.area;
         }
+		area += areaTSV;
+
+		if (inputParameter->peripheralUnderArray) {
+			/* Take max of total subarray array area vs. all peripheral areas (subarray + bank level, including wire repeaters). */
+			double bankArrayArea = subarray.arrayArea * numRowSubArray * numColumnSubArray;
+			double bankPeripheralArea = area - bankArrayArea - areaTSV;
+			double aspectRatio = height / width;
+			area = MAX(bankArrayArea, bankPeripheralArea) + areaTSV;
+			height = sqrt(area * aspectRatio);
+			width = area / height;
+		}
 	}
 }
 

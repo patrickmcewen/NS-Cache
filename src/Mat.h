@@ -107,6 +107,8 @@ public:
 	double resWriteCellAccess; /* Resistance of access device, Unit: ohm */ //gcDRAM bidir only
 	double capWriteCellAccess; /* Capacitance of access device, Unit: ohm */ //gcDRAM bidir only
 	int largerLine;
+	double arrayArea;		/* Pure memory cell array area (lenWordline * lenBitline), Unit: m^2 */
+	double peripheralArea;	/* Mat peripheral circuit area (mat area - arrayArea), Unit: m^2 */
 
 
 	// 1.4 update : parameters for buffer insertion

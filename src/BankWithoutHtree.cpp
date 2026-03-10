@@ -299,6 +299,16 @@ void BankWithoutHtree::CalculateArea() {
             // We're not adding in a particular dimension (width/height) so increase the total
             area += tsvArray.numTotalBits * tsvArray.area;
         }
+
+		if (inputParameter->peripheralUnderArray) {
+			/* Take max of total subarray array area vs. all peripheral areas (subarray + bank level). */
+			double bankArrayArea = subarray.arrayArea * numRowSubArray * numColumnSubArray;
+			double bankPeripheralArea = area - bankArrayArea;
+			double aspectRatio = height / width;
+			area = MAX(bankArrayArea, bankPeripheralArea);
+			height = sqrt(area * aspectRatio);
+			width = area / height;
+		}
 	}
 }
 
