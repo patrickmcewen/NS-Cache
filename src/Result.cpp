@@ -1873,7 +1873,7 @@ void Result::printAsCacheToCsvFile(Result &tagResult, CacheAccessMode cacheAcces
 		printToCsvFile(outputFile);
 		tagResult.printToCsvFile(outputFile);
         outputFile << bank->subarray.mat.leakage + tagResult.bank->subarray.mat.leakage << ",";
-        outputFile << (bank->subarray.mat.area + tagResult.bank->subarray.mat.area) * 1e6 << ",";
+        outputFile << (bank->subarray.mat.area + tagResult.bank->subarray.mat.area) * 1e6;
 		outputFile << endl;
 	}
 }
