@@ -178,7 +178,7 @@ void BankWithHtree::Initialize(int _numRowSubArray, int _numColumnSubArray, long
         numAddressBit = (int)(log2((double)capacity / blockSize / associativity) + 0.1);
     }
 
-	if (memoryType == data) {
+	if (memoryType == MemoryType::data) {
 		numDataDistributeBit = blockSize;
 		numDataBroadcastBit = (int)(log2(associativity));	/* TO-DO: this is not the only way */
 	} else if (memoryType == tag) {
@@ -410,7 +410,7 @@ void BankWithHtree::Initialize(int _numRowSubArray, int _numColumnSubArray, long
 	}
 
 	/* If this subarray is cache data array, determine if the number of cache ways assigned to this subarray is legal */
-	if (memoryType == data) {
+	if (memoryType == MemoryType::data) {
 		if (numRowPerSet > (int)pow(2, numDataBroadcastBitToRoute)) {
 			/* There is no enough ways to distribute into multiple rows */
 			invalid = true;
@@ -437,7 +437,7 @@ void BankWithHtree::Initialize(int _numRowSubArray, int _numColumnSubArray, long
 
 	/* Determine the number of columns in a subarray */
 	long subarrayBlockSize;
-	if (memoryType == data) {		/* Data array */
+	if (memoryType == MemoryType::data) {		/* Data array */
 		/* numDataDistributeBit is the bits in a data word that is assigned to this subarray */
 		subarrayBlockSize = numDataDistributeBitToRoute;
 		numWay = (int)pow(2, numDataBroadcastBitToRoute);
@@ -531,7 +531,7 @@ void BankWithHtree::CalculateArea() {
 		}
 
 		/* Determine if the aspect ratio meets the constraint */
-		if (memoryType == data)
+		if (memoryType == MemoryType::data)
 			if (height / width > CONSTRAINT_ASPECT_RATIO_BANK || width / height > CONSTRAINT_ASPECT_RATIO_BANK) {
 				/* illegal */
 				invalid = true;

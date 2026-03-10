@@ -1273,7 +1273,7 @@ void Result::printToFile(int indent, const string &FileName) {
 }
 
 void Result::printAsCache(Result &tagResult, CacheAccessMode cacheAccessMode) {
-	if (bank->memoryType != data || tagResult.bank->memoryType != tag) {
+	if (bank->memoryType != MemoryType::data || tagResult.bank->memoryType != tag) {
 		cout << "This is not a valid cache configuration." << endl;
 		return;
 	} else {
@@ -1453,7 +1453,7 @@ void Result::printAsCacheToFile(CacheAccessMode cacheAccessMode, const string &F
         return;
     }
 
-    if (bank->memoryType != data) {
+    if (bank->memoryType != MemoryType::data) {
         outFile << "This is not a valid cache configuration." << endl;
         outFile.close();
         return;
@@ -1758,7 +1758,7 @@ void Result::printToCsvFile(ofstream &outputFile) {
 }
 
 void Result::printAsCacheToCsvFile(Result &tagResult, CacheAccessMode cacheAccessMode, ofstream &outputFile) {
-	if (bank->memoryType != data || tagResult.bank->memoryType != tag) {
+	if (bank->memoryType != MemoryType::data || tagResult.bank->memoryType != tag) {
 		cout << "This is not a valid cache configuration." << endl;
 		return;
 	} else {
