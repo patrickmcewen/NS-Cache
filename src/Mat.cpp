@@ -663,6 +663,15 @@ void Mat::CalculateArea() {
 		area = width * height;
 		stackedMemTiers = 1;
 
+		if (inputParameter->peripheralUnderArray) {
+			double arrayArea = lenWordline * lenBitline;
+			double peripheralArea = area - arrayArea;
+			double aspectRatio = height / width;
+			area = MAX(arrayArea, peripheralArea);
+			height = sqrt(area * aspectRatio);
+			width = area / height;
+		}
+
 		if(inputParameter->monolithic3DMat){
 
 			tsvArray.CalculateArea(); /* Initialize Area per MIV */

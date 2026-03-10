@@ -129,7 +129,8 @@ public:
 	double clockInput;
 
     int monolithicStackCount; // 1 or 2 valid (2 for HRRAM-style design). Destiny vers. M3D
-	bool monolithic3DMat; // Use monolithic 3D mat design. NS-Cache vers. M3D 
+	bool monolithic3DMat; // Use monolithic 3D mat design. NS-Cache vers. M3D
+	bool peripheralUnderArray; // Area model: mat area = max(arrayArea, peripheralArea)
 
     int minStackLayer;
     int maxStackLayer;

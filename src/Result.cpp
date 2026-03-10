@@ -1622,6 +1622,12 @@ void Result::printCsvHeader(ofstream &outputFile) {
 		outputFile << prefix << "MatHeight_um," << prefix << "MatWidth_um," << prefix << "MatArea_um2,";
 		outputFile << prefix << "ArrayEfficiency_pct,";
 		outputFile << prefix << "ReadLatency_ns," << prefix << "WriteLatency_ns," << prefix << "RefreshLatency_ns,";
+		outputFile << prefix << "RoutingReadLatency_ns," << prefix << "SubArrayReadLatency_ns,";
+		outputFile << prefix << "PredecoderLatency_ns," << prefix << "MatReadLatency_ns,";
+		outputFile << prefix << "RowDecoderReadLatency_ns," << prefix << "WriteRowDecoderLatency_ns,";
+		outputFile << prefix << "BitlineReadLatency_ns," << prefix << "SenseampReadLatency_ns,";
+		outputFile << prefix << "PrechargeLatency_ns," << prefix << "MuxLatency_ns,";
+		outputFile << prefix << "WriteBitlineLatency_ns," << prefix << "WriteDriveLatency_ns,";
 		outputFile << prefix << "ReadDynamicEnergy_pJ," << prefix << "WriteDynamicEnergy_pJ," << prefix << "RefreshDynamicEnergy_pJ,";
 		outputFile << prefix << "Leakage_mW," << prefix << "RefreshPower_W,";
 		outputFile << prefix << "StackedMemTiers,";
@@ -1632,7 +1638,7 @@ void Result::printCsvHeader(ofstream &outputFile) {
 }
 
 void Result::printToCsvFile(ofstream &outputFile) {
-	cout << "in print output csv loop" << endl;
+	//cout << "in print output csv loop" << endl;
 	outputFile << bank->numRowSubArray << "," << bank->numColumnSubArray << "," << bank->stackedDieCount << "," << bank->numActiveSubArrayPerColumn << "," << bank->numActiveSubArrayPerRow << ",";
 	outputFile << bank->numRowMat << "," << bank->numColumnMat << "," << bank->numActiveMatPerColumn << "," << bank->numActiveMatPerRow << ",";
 	outputFile << bank->subarray.mat.numRow << "," << bank->subarray.mat.numColumn << ",";
@@ -1769,6 +1775,33 @@ void Result::printToCsvFile(ofstream &outputFile) {
     } else {
         outputFile << "0,";
     }
+	outputFile << bank->routingReadLatency * 1e9 << ",";
+	outputFile << bank->subarray.readLatency * 1e9 << ",";
+	outputFile << bank->subarray.predecoderLatency * 1e9 << ",";
+	outputFile << bank->subarray.mat.readLatency * 1e9 << ",";
+	if (cell->memCellType == gcDRAM) {
+		outputFile << bank->subarray.mat.gcRowDecoder.readLatency * 1e9 << ",";
+		outputFile << bank->subarray.mat.rowDecoder.readLatency * 1e9 << ",";
+		outputFile << bank->subarray.mat.readBitlineDelay * 1e9 << ",";
+	} else {
+		outputFile << bank->subarray.mat.rowDecoder.readLatency * 1e9 << ",";
+		outputFile << "0,";
+		outputFile << bank->subarray.mat.bitlineDelay * 1e9 << ",";
+	}
+	if (inputParameter->internalSensing)
+		outputFile << bank->subarray.mat.senseAmp.readLatency * 1e9 << ",";
+	else
+		outputFile << "0,";
+	outputFile << bank->subarray.mat.precharger.readLatency * 1e9 << ",";
+	outputFile << (bank->subarray.mat.bitlineMux.readLatency
+	               + bank->subarray.mat.senseAmpMuxLev1.readLatency
+	               + bank->subarray.mat.senseAmpMuxLev2.readLatency) * 1e9 << ",";
+	if (cell->memCellType == gcDRAM) {
+		outputFile << bank->subarray.mat.writeBitlineDelay * 1e9 << ",";
+		outputFile << bank->subarray.mat.writecharger.readLatency * 1e9 << ",";
+	} else {
+		outputFile << "0,0,";
+	}
 	outputFile << bank->readDynamicEnergy * 1e12 << "," << bank->writeDynamicEnergy * 1e12 << ",";
     if (cell->memCellType == eDRAM || cell->memCellType == gcDRAM) {
         outputFile << bank->refreshDynamicEnergy * 1e12 << ",";

@@ -103,6 +103,7 @@ InputParameter::InputParameter() {
 	isPruningEnabled = false;
 	viewMatStats = false;
 	monolithic3DMat = false;
+	peripheralUnderArray = false;
 
 	pageSize = 0;
 	flashBlockSize = 0;
@@ -645,6 +646,11 @@ void InputParameter::ReadInputParameterFromFile(const std::string & inputFile) {
 		if (!strncmp("-M3DMemory", line, strlen("-M3DMemory"))) {
 			sscanf(line, "-M3DMemory: %lf", tmp);
 			monolithic3DMat = true;
+			continue;
+		}
+
+		if (!strncmp("-PeripheralUnderArray", line, strlen("-PeripheralUnderArray"))) {
+			peripheralUnderArray = true;
 			continue;
 		}
 

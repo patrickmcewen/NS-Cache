@@ -20,6 +20,7 @@
 #include <fstream>
 #include <sstream>
 #include <iomanip>
+#include <filesystem>
 #include <math.h>
 #include <cassert>
 #include "InputParameter.h"
@@ -272,8 +273,9 @@ int main(int argc, char *argv[])
 		//	temp << "_CUR";
 		temp << ".csv";
 		outputFileName = temp.str();*/
-        int extIdx = inputFileName.find_last_of("."); 
-        outputFileName = inputFileName.substr(0, extIdx) + ".csv";
+        string baseName = std::filesystem::path(inputFileName).stem().string();
+        std::filesystem::create_directories("config/csv");
+        outputFileName = "config/csv/" + baseName + ".csv";
 		outputFile.open(outputFileName.c_str(), ofstream::out | ofstream::trunc);
         if (!outputFile.is_open()) {
             cout << "Could not open file " << outputFileName << "!" << endl;
