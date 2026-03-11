@@ -133,7 +133,9 @@ public:
 
     int monolithicStackCount; // 1 or 2 valid (2 for HRRAM-style design). Destiny vers. M3D
 	bool monolithic3DMat; // Use monolithic 3D mat design. NS-Cache vers. M3D
-	bool peripheralUnderArray; // Area model: mat area = max(arrayArea, peripheralArea)
+	bool peripheralUnderArraySubArray; // Area model: subarray area = max(arrayArea, peripheralArea)
+	bool peripheralUnderArrayMat;      // Area model: mat area = max(arrayArea, peripheralArea)
+	bool peripheralUnderArrayBank;     // Area model: bank area = max(arrayArea, peripheralArea)
 
     int minStackLayer;
     int maxStackLayer;

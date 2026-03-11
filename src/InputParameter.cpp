@@ -106,7 +106,9 @@ InputParameter::InputParameter() {
 	isPruningEnabled = false;
 	viewMatStats = false;
 	monolithic3DMat = false;
-	peripheralUnderArray = false;
+	peripheralUnderArraySubArray = false;
+	peripheralUnderArrayMat = false;
+	peripheralUnderArrayBank = false;
 
 	pageSize = 0;
 	flashBlockSize = 0;
@@ -667,8 +669,18 @@ void InputParameter::ReadInputParameterFromFile(const std::string & inputFile) {
 			continue;
 		}
 
-		if (!strncmp("-PeripheralUnderArray", line, strlen("-PeripheralUnderArray"))) {
-			peripheralUnderArray = true;
+		if (!strncmp("-PeripheralUnderArraySubArray", line, strlen("-PeripheralUnderArraySubArray"))) {
+			peripheralUnderArraySubArray = true;
+			continue;
+		}
+
+		if (!strncmp("-PeripheralUnderArrayMat", line, strlen("-PeripheralUnderArrayMat"))) {
+			peripheralUnderArrayMat = true;
+			continue;
+		}
+
+		if (!strncmp("-PeripheralUnderArrayBank", line, strlen("-PeripheralUnderArrayBank"))) {
+			peripheralUnderArrayBank = true;
 			continue;
 		}
 

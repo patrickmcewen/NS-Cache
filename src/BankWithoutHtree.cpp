@@ -300,7 +300,7 @@ void BankWithoutHtree::CalculateArea() {
             area += tsvArray.numTotalBits * tsvArray.area;
         }
 
-		if (inputParameter->peripheralUnderArray) {
+		if (inputParameter->peripheralUnderArrayBank) {
 			/* Take max of total subarray array area vs. all peripheral areas (subarray + bank level). */
 			double bankArrayArea = subarray.arrayArea * numRowSubArray * numColumnSubArray;
 			double bankPeripheralArea = area - bankArrayArea;

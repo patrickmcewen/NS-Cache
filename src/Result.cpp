@@ -1600,7 +1600,7 @@ void Result::printAsCacheToFile(CacheAccessMode cacheAccessMode, const string &F
 void Result::printCsvHeader(ofstream &outputFile) {
 	/* Cache-level summary */
 	outputFile << "AccessMode,";
-	outputFile << "CacheArea_um2,";
+	outputFile << "CacheArea_mm2,";
 	outputFile << "HitLatency_ns,MissLatency_ns,WriteLatency_ns,RefreshLatency_ns,";
 	outputFile << "HitDynamicEnergy_nJ,MissDynamicEnergy_nJ,WriteDynamicEnergy_nJ,RefreshDynamicEnergy_nJ,";
 	outputFile << "Leakage_mW,RefreshPower_W,CacheAvailability_pct,RetentionTime_us,";
@@ -1617,9 +1617,9 @@ void Result::printCsvHeader(ofstream &outputFile) {
 		outputFile << prefix << "LocalWireType," << prefix << "LocalRepeater," << prefix << "LocalLowSwing,";
 		outputFile << prefix << "GlobalWireType," << prefix << "GlobalRepeater," << prefix << "GlobalLowSwing,";
 		outputFile << prefix << "AreaOptimization,";
-		outputFile << prefix << "BankHeight_um," << prefix << "BankWidth_um," << prefix << "BankArea_um2,";
-		outputFile << prefix << "SubarrayHeight_um," << prefix << "SubarrayWidth_um," << prefix << "SubarrayArea_um2,";
-		outputFile << prefix << "MatHeight_um," << prefix << "MatWidth_um," << prefix << "MatArea_um2,";
+		outputFile << prefix << "BankHeight_um," << prefix << "BankWidth_um," << prefix << "BankArea_mm2,";
+		outputFile << prefix << "SubarrayHeight_um," << prefix << "SubarrayWidth_um," << prefix << "SubarrayArea_mm2,";
+		outputFile << prefix << "MatHeight_um," << prefix << "MatWidth_um," << prefix << "MatArea_mm2,";
 		outputFile << prefix << "ArrayEfficiency_pct,";
 		outputFile << prefix << "ReadLatency_ns," << prefix << "WriteLatency_ns," << prefix << "RefreshLatency_ns,";
 		outputFile << prefix << "RoutingReadLatency_ns," << prefix << "SubArrayReadLatency_ns,";
@@ -1633,7 +1633,7 @@ void Result::printCsvHeader(ofstream &outputFile) {
 		outputFile << prefix << "StackedMemTiers,";
 	}
 
-	outputFile << "CombinedMatLeakage_W,CombinedMatArea_um2";
+	outputFile << "CombinedMatLeakage_W,CombinedMatArea_mm2";
 	outputFile << "\n";
 }
 

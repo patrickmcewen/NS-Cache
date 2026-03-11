@@ -233,10 +233,10 @@ void Mat::Initialize(long long _numRow, long long _numColumn, bool _multipleRowP
 	} else {
 		lenWordline = (double)numColumn * cell->widthInFeatureSize * tech->featureSize;
 		lenBitline = (double)numRow * cell->heightInFeatureSize * tech->featureSize;
-		if(cell->memCellType == gcDRAM) {
-			lenBitline = ((double)(numRow+2) * cell->heightInFeatureSize * devtech->featureSize)/2; //Add Reference on Both Ends
-			lenWordline = (double)(numColumn) * MAX(cell->widthInFeatureSize, MIN_CELL_HEIGHT) * devtech->featureSize; // change cell dimensions to be based on device technology
-		}
+	}
+	if(cell->memCellType == gcDRAM) {
+		lenBitline = ((double)(numRow+2) * cell->heightInFeatureSize * devtech->featureSize)/2; //Add Reference on Both Ends
+		lenWordline = (double)(numColumn) * cell->widthInFeatureSize * devtech->featureSize; // change cell dimensions to be based on device technology
 	}
 	/* Add stitching overhead if necessary */
 	if (cell->stitching) {
@@ -675,7 +675,7 @@ void Mat::CalculateArea() {
 		area = width * height;
 		stackedMemTiers = 1;
 
-		if (inputParameter->peripheralUnderArray) {
+		if (inputParameter->peripheralUnderArrayMat) {
 			arrayArea = lenWordline * lenBitline;
 			peripheralArea = area - arrayArea;
 			double aspectRatio = height / width;

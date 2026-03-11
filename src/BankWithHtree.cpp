@@ -615,7 +615,7 @@ void BankWithHtree::CalculateArea() {
         }
 		area += areaTSV;
 
-		if (inputParameter->peripheralUnderArray) {
+		if (inputParameter->peripheralUnderArrayBank) {
 			/* Take max of total subarray array area vs. all peripheral areas (subarray + bank level, including wire repeaters). */
 			double bankArrayArea = subarray.arrayArea * numRowSubArray * numColumnSubArray;
 			double bankPeripheralArea = area - bankArrayArea - areaTSV;
