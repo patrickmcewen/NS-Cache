@@ -886,7 +886,7 @@ void Mat::CalculateLatency(double _rampInput) {
 			gcDecoderLatency = MAX(gcRowDecoder.readLatency, columnDecoderLatency);
 			
 			double capRBL = (capBitlineRead + bitlineMux.capForPreviousDelayCalculation);
-			double capWBL = (capCellAccess + capCellAccess1Gate + capBitline + bitlineMux.capForPreviousDelayCalculation);
+			double capWBL = (capCellAccess + cell->capDRAMCell + capCellAccess1Gate + capBitline + bitlineMux.capForPreviousDelayCalculation);
 
 			double res = resBitline + resCellAccess;
 			
