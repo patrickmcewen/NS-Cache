@@ -24,8 +24,10 @@ from paretoset import paretoset
 HIT_LAT  = "HitLatency_ns"
 AREA     = "CacheArea_mm2"
 HIT_ENRG = "HitDynamicEnergy_nJ"
+WRITE_LAT = "WriteLatency_ns"
+LEAKAGE = "Leakage_mW"
 
-PARETO_METRICS = [HIT_LAT, AREA, HIT_ENRG]
+PARETO_METRICS = [HIT_LAT, AREA, HIT_ENRG, WRITE_LAT, LEAKAGE]
 
 MAT_LIMITS = {"2T": 128, "3T": 1024}
 

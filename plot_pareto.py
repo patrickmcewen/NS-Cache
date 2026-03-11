@@ -12,6 +12,8 @@ PARETO_METRICS = [
     "WriteLatency_ns",
     "CacheArea_mm2",
     "Leakage_mW",
+    "HitDynamicEnergy_nJ",
+    "WriteDynamicEnergy_nJ"
 ]
 
 # ── Plot axes ─────────────────────────────────────────────────────────────────

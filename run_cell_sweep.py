@@ -10,7 +10,7 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 
 ROOT          = os.path.dirname(os.path.abspath(__file__))
 CELLS_DIR     = os.path.join(ROOT, "config", "gc_cfg", "cells")
-BASE_CFG_DIR  = os.path.join(ROOT, "config", "gc_cfg", "sweep_configs_no_set")
+BASE_CFG_DIR  = os.path.join(ROOT, "config", "gc_cfg", "sweep_configs_base")
 RUN_AND_PLOT  = os.path.join(ROOT, "run_and_plot.py")
 PYTHON        = sys.executable
 
