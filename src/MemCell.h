@@ -77,11 +77,21 @@ public:
 	double gateOxThicknessFactor; /* The oxide thickness of FBRAM could be larger than the traditional SOI MOS */
 	double widthSOIDevice; /* The gate width of SOI device as FBRAM element, Unit: F*/
 	double widthAccessCMOS;	/* The gate width of CMOS access transistor, Unit: F */
+	double widthAccessCMOS1;	/* The gate width of read transistor which is also the storage node (2T/3T gain cell), Unit: F */
+	double widthAccessCMOS2;	/* The gate width of read access transistor (3T gain cell only), Unit: F */
 	double voltageDropAccessDevice;  /* The voltage drop on the access device, Unit: V */
 	double leakageCurrentAccessDevice;  /* Reverse current of access device, Unit: uA */
 	double capDRAMCell;		/* The DRAM cell capacitance if the memory cell is DRAM, Unit: F */
 	double widthSRAMCellNMOS;	/* The gate width of NMOS in SRAM cells, Unit: F */
 	double widthSRAMCellPMOS;	/* The gate width of PMOS in SRAM cells, Unit: F */
+
+	GainCellType gcType;	/* Gain cell topology: 2T or 3T (gcDRAM only) */
+
+	/* Optional override for device transistor(s) on/off currents (Unit: A/m). -1 means use process-node defaults. */
+	double customCurrentOnNmos[3];
+	double customCurrentOnPmos[3];
+	double customCurrentOffNmos[3];
+	double customCurrentOffPmos[3];
 
 	/* For memristor */
 	bool readFloating;      /* If unselected wordlines/bitlines are floating to reduce total leakage */

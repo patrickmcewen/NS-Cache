@@ -302,12 +302,21 @@ void Mat::Initialize(long long _numRow, long long _numColumn, bool _multipleRowP
 		else {capBitline  += capCellAccess * numRow / 2;	/* Due to shared contact */}
 		voltagePrecharge = devtech->vdd / 2;	/* DRAM read voltage is always half of vdd */
 	} else if(cell->memCellType == gcDRAM) {
-		// Gain Cell has Split Read and Write Paths, with different connectivity than eDRAM
+		// Gain Cell has Split Read and Write Paths, with different connectivity than eDRAM. Transistor indices are as follows:
+		// 0: Write Transistor
+		// 1: Read Transistor
+		// 2: Read Access Transistor (3T only)
 		capWordlineRead = capWordline;
 		capBitlineRead = capBitline;
-		resCellAccess = CalculateOnResistance(((tech->featureSize <= 14*1e-9)? 2:1) * cell->widthAccessCMOS * devtech->featureSize, NMOS, inputParameter->temperature, *devtech);
-		capCellAccess = CalculateDrainCap(((tech->featureSize <= 14*1e-9)? 2:1) * cell->widthAccessCMOS * devtech->featureSize, NMOS, cell->widthInFeatureSize * devtech->featureSize, *devtech);
-		capWordline += CalculateGateCap(((tech->featureSize <= 14*1e-9)? 2:1) * cell->widthAccessCMOS * devtech->featureSize, *devtech) * numColumn;
+		resCellAccess = CalculateOnResistance(((devtech->featureSize <= 14*1e-9)? 2:1) * cell->widthAccessCMOS * devtech->featureSize, NMOS, inputParameter->temperature, *devtech);
+		resCellAccess1 = CalculateOnResistance(((devtech1->featureSize <= 14*1e-9)? 2:1) * cell->widthAccessCMOS1 * devtech1->featureSize, NMOS, inputParameter->temperature, *devtech1);
+		resCellAccess1Off = CalculateOffResistance(((devtech1->featureSize <= 14*1e-9)? 2:1) * cell->widthAccessCMOS1 * devtech1->featureSize, NMOS, inputParameter->temperature, *devtech1);
+		resCellAccess2 = CalculateOnResistance(((devtech2->featureSize <= 14*1e-9)? 2:1) * cell->widthAccessCMOS2 * devtech2->featureSize, NMOS, inputParameter->temperature, *devtech2);
+		capCellAccess = CalculateDrainCap(((devtech->featureSize <= 14*1e-9)? 2:1) * cell->widthAccessCMOS * devtech->featureSize, NMOS, cell->widthInFeatureSize * devtech->featureSize, *devtech);
+		capCellAccess1 = CalculateDrainCap(((devtech1->featureSize <= 14*1e-9)? 2:1) * cell->widthAccessCMOS1 * devtech1->featureSize, NMOS, cell->widthInFeatureSize * devtech1->featureSize, *devtech1);
+		capCellAccess2 = CalculateDrainCap(((devtech2->featureSize <= 14*1e-9)? 2:1) * cell->widthAccessCMOS2 * devtech2->featureSize, NMOS, cell->widthInFeatureSize * devtech2->featureSize, *devtech2);
+		capCellAccess1Gate = CalculateGateCap(((devtech1->featureSize <= 14*1e-9)? 2:1) * cell->widthAccessCMOS1 * devtech1->featureSize, *devtech1); // SN gate cap
+		capWordline += CalculateGateCap(((devtech->featureSize <= 14*1e-9)? 2:1) * cell->widthAccessCMOS * devtech->featureSize, *devtech) * numColumn;
 		capWordlineRead += capCellAccess * numColumn / 2; // Shared Contact on RWL
 		if(tech->featureSize <= 14 * 1e-9){ capBitline += tech->cap_draintotal * cell->widthAccessCMOS * tech->effective_width * numRow / 2;}
 		else {capBitline  += capCellAccess * numRow / 2;	/* Due to shared contact */}
@@ -315,8 +324,8 @@ void Mat::Initialize(long long _numRow, long long _numColumn, bool _multipleRowP
 		else {capBitlineRead  += capCellAccess * numRow;	/* Keep RBL unshared, sneak path in voltage mode */}
 		voltagePrecharge = devtech->vdd; //In the hold state, RBL is high
 
-		resMemCellOn = CalculateOnResistance(((tech->featureSize <= 14*1e-9)? 2:1) * cell->widthAccessCMOS * tech->featureSize, NMOS, inputParameter->temperature, *tech);
-		resMemCellOff = CalculateOffResistance(((tech->featureSize <= 14*1e-9)? 2:1) * cell->widthAccessCMOS * tech->featureSize, NMOS, inputParameter->temperature, *tech);
+		resMemCellOn = (cell->gcType == gc_3T)? resCellAccess1 + resCellAccess2 : resCellAccess1; //previously CalculateOnResistance(((tech->featureSize <= 14*1e-9)? 2:1) * cell->widthAccessCMOS * tech->featureSize, NMOS, inputParameter->temperature, *tech);
+		resMemCellOff = (cell->gcType == gc_3T)? resCellAccess1Off + resCellAccess2 : resCellAccess1Off; //previously CalculateOffResistance(((tech->featureSize <= 14*1e-9)? 2:1) * cell->widthAccessCMOS * tech->featureSize, NMOS, inputParameter->temperature, *tech);
 
 		if (cell->readMode) { /* voltage-sensing */
 			if (cell->readVoltage == 0) {  /* Current-in voltage sensing */
@@ -877,28 +886,34 @@ void Mat::CalculateLatency(double _rampInput) {
 			gcDecoderLatency = MAX(gcRowDecoder.readLatency, columnDecoderLatency);
 			
 			double capRBL = (capBitlineRead + bitlineMux.capForPreviousDelayCalculation);
-			double capWBL = (capCellAccess + CalculateGateCap(((tech->featureSize <= 14*1e-9)? 2:1) * tech->featureSize, *tech) + capBitline + bitlineMux.capForPreviousDelayCalculation);
+			double capWBL = (capCellAccess + capCellAccess1Gate + capBitline + bitlineMux.capForPreviousDelayCalculation);
 
 			double res = resBitline + resCellAccess;
 			
-			double tauRBL = 2.3 * res * capRBL;
+			//double tauRBL = 2.3 * res * capRBL; // unused assignment
 			double tauWBL = 2.3 * res * capWBL;
 			
 			double bitlineRampRead = 0;
 			double bitlineRampWrite = 0;
 
 			writeBitlineDelay = horowitz(tauWBL, 0, rowDecoder.rampOutput, &bitlineRampWrite);
-			readBitlineDelay = horowitz(tauRBL, 0, gcRowDecoder.rampOutput, &bitlineRampRead);
+			//readBitlineDelay = horowitz(tauRBL, 0, gcRowDecoder.rampOutput, &bitlineRampRead); // unused assignment
 
-			double lrs_resistance = CalculateOnResistance(((tech->featureSize <= 14*1e-9)? 2:1) * cell->widthAccessCMOS * tech->featureSize, NMOS, inputParameter->temperature, *tech);
-			double hrs_resistance = CalculateOffResistance(((tech->featureSize <= 14*1e-9)? 2:1) * cell->widthAccessCMOS * tech->featureSize, NMOS, inputParameter->temperature, *tech);
+			double lrs_resistance = resCellAccess1; // LRS resistance of read transistor
+			double hrs_resistance = resCellAccess1Off; // HRS resistance of read transistor
 
-			double tau = lrs_resistance * (capCellAccess + capBitlineRead + bitlineMux.capForPreviousDelayCalculation)
+			// for 3T, second series transistor will always be on during read.
+			lrs_resistance = (cell->gcType == gc_3T)? lrs_resistance + resCellAccess2 : lrs_resistance;
+			hrs_resistance = (cell->gcType == gc_3T)? hrs_resistance + resCellAccess2 : hrs_resistance;
+
+			double capCellAccessReadPath = (cell->gcType == gc_3T)? capCellAccess1 + capCellAccess2 : capCellAccess1;
+
+			double tau = lrs_resistance * (capCellAccessReadPath + capBitlineRead + bitlineMux.capForPreviousDelayCalculation)
 					+ resBitline * (bitlineMux.capForPreviousDelayCalculation + capBitlineRead / 2); /* time constant of LRS */
-			bitlineDelayOn = tau * log((voltagePrecharge - voltageMemCellOn)/(voltagePrecharge - voltageMemCellOn - senseVoltage));  /* BitlineDelay of HRS */
-			tau = hrs_resistance * (capCellAccess + capBitlineRead + bitlineMux.capForPreviousDelayCalculation)
+			bitlineDelayOn = tau * log((voltagePrecharge - voltageMemCellOn)/(voltagePrecharge - voltageMemCellOn - senseVoltage));  /* BitlineDelay of LRS */
+			tau = hrs_resistance * (capCellAccessReadPath + capBitlineRead + bitlineMux.capForPreviousDelayCalculation)
 					+ resBitline * (bitlineMux.capForPreviousDelayCalculation + capBitlineRead / 2);  /* time constant of HRS */
-			bitlineDelayOff = tau * log((voltageMemCellOff - voltagePrecharge)/(voltageMemCellOff - voltagePrecharge - senseVoltage));
+			bitlineDelayOff = tau * log((voltageMemCellOff - voltagePrecharge)/(voltageMemCellOff - voltagePrecharge - senseVoltage)); // not sure why this is even needed since BL doesn't change when SN is off
 			bitlineDelay = MAX(bitlineDelayOn, bitlineDelayOff);
 			readBitlineDelay = bitlineDelay;
 

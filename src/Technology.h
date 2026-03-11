@@ -37,6 +37,7 @@ public:
 	void PrintProperty();
 	void Initialize(int _featureSizeInNano, DeviceRoadmap _deviceRoadmap, InputParameter *inputParameter);
 	void InterpolateWith(Technology rhs, double _alpha);
+	void OverrideCurrentsFromCell(MemCell *cell, int transistorIndex);
 
 	/* Properties */
 	bool initialized;	/* Initialization flag */

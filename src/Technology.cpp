@@ -2527,6 +2527,17 @@ void Technology::Initialize(int _featureSizeInNano, DeviceRoadmap _deviceRoadmap
 	initialized = true;
 }
 
+void Technology::OverrideCurrentsFromCell(MemCell *cell, int transistorIndex) {
+	if (cell->customCurrentOnNmos[transistorIndex] >= 0)
+		for (int i = 0; i <= 100; i++) currentOnNmos[i] = cell->customCurrentOnNmos[transistorIndex];
+	if (cell->customCurrentOnPmos[transistorIndex] >= 0)
+		for (int i = 0; i <= 100; i++) currentOnPmos[i] = cell->customCurrentOnPmos[transistorIndex];
+	if (cell->customCurrentOffNmos[transistorIndex] >= 0)
+		for (int i = 0; i <= 100; i++) currentOffNmos[i] = cell->customCurrentOffNmos[transistorIndex];
+	if (cell->customCurrentOffPmos[transistorIndex] >= 0)
+		for (int i = 0; i <= 100; i++) currentOffPmos[i] = cell->customCurrentOffPmos[transistorIndex];
+}
+
 void Technology::PrintProperty() {
 	cout << "Fabrication Process Technology Node:" << endl;
 	cout << "TO-DO" << endl;

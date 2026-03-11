@@ -41,7 +41,10 @@ public:
 	/* Properties */
 	DesignTarget designTarget;		/* Cache, RAM, or CAM */
 	OptimizationTarget optimizationTarget;	/* Either read latency, write latency, read energy, write energy, leakage, or area */
-	int processNode;				/* Process node (nm) */
+	int processNode;				/* Process node for peripheral technology (nm) */
+	int processNodeCell;			/* Process node for devtech (write transistor); defaults to processNode */
+	int processNodeCell1;			/* Process node for devtech1 (2T read transistor); defaults to processNode */
+	int processNodeCell2;			/* Process node for devtech2 (3T read transistor); defaults to processNode */
 	int64_t capacity;				/* Memory/cache capacity, Unit: Byte */
 	long wordWidth;					/* The width of each input/output word, Unit: bit */
 	DeviceRoadmap deviceRoadmap;	/* ITRS roadmap: HP, LSTP, or LOP */

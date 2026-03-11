@@ -78,7 +78,13 @@ public:
 	double resReadWordline;	/* Wordline resistance, Unit: ohm */
 	double resWriteBitline;	/* Bitline resistance, Unit: ohm */
 	double resCellAccess; /* Resistance of access device, Unit: ohm */
+	double resCellAccess1; /* Resistance of access device, Unit: ohm */
+	double resCellAccess1Off; /* Resistance of access device, Unit: ohm */
+	double resCellAccess2; /* Resistance of access device, Unit: ohm */
 	double capCellAccess; /* Capacitance of access device, Unit: ohm */
+	double capCellAccess1; /* Capacitance of access device, Unit: ohm */
+	double capCellAccess2; /* Capacitance of access device, Unit: ohm */
+	double capCellAccess1Gate; /* Capacitance of access device, Unit: ohm */
 	double resMemCellOff;  /* HRS resistance, Unit: ohm */
 	double resMemCellOn;   /* LRS resistance, Unit: ohm */
 	double voltageMemCellOff; /* Voltage drop on HRS during read operation, Unit: V */

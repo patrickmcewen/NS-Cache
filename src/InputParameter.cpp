@@ -29,6 +29,9 @@ InputParameter::InputParameter() {
 	designTarget = cache;
 	optimizationTarget = read_latency_optimized;
 	processNode = 90;
+	processNodeCell = -1;
+	processNodeCell1 = -1;
+	processNodeCell2 = -1;
 	maxDriverCurrent = 0;
 
 	maxNmosSize = MAX_NMOS_SIZE;
@@ -188,6 +191,21 @@ void InputParameter::ReadInputParameterFromFile(const std::string & inputFile) {
 		if (!strncmp("-OutputFilePrefix", line, strlen("-OutputFilePrefix"))) {
 			sscanf(line, "-OutputFilePrefix: %s", tmp);
 			outputFilePrefix = (string)tmp;
+			continue;
+		}
+
+		if (!strncmp("-ProcessNodeCell2", line, strlen("-ProcessNodeCell2"))) {
+			sscanf(line, "-ProcessNodeCell2: %d", &processNodeCell2);
+			continue;
+		}
+
+		if (!strncmp("-ProcessNodeCell1", line, strlen("-ProcessNodeCell1"))) {
+			sscanf(line, "-ProcessNodeCell1: %d", &processNodeCell1);
+			continue;
+		}
+
+		if (!strncmp("-ProcessNodeCell", line, strlen("-ProcessNodeCell"))) {
+			sscanf(line, "-ProcessNodeCell: %d", &processNodeCell);
 			continue;
 		}
 
@@ -711,6 +729,10 @@ void InputParameter::ReadInputParameterFromFile(const std::string & inputFile) {
             sscanf(line, "-PrintLevel: %d", &printLevel);
         }
 	}
+
+	if (processNodeCell  < 0) processNodeCell  = processNode;
+	if (processNodeCell1 < 0) processNodeCell1 = processNode;
+	if (processNodeCell2 < 0) processNodeCell2 = processNode;
 
 	fclose(fp);
 }

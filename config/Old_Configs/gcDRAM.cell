@@ -14,3 +14,6 @@
 -SetVoltage (V): vdd
 
 -MinSenseVoltage (mV): 10
+
+-RetentionTime (us): 10000
+-Temperature (K): 300 

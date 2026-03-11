@@ -54,11 +54,26 @@ MemCell::MemCell() {
 	gateOxThicknessFactor = 2;
 	widthSOIDevice = 0;
 	widthAccessCMOS   = 0;
+	widthAccessCMOS1  = 0;
+	widthAccessCMOS2  = 0;
 	voltageDropAccessDevice = 0;
 	leakageCurrentAccessDevice = 0;
 	capDRAMCell		  = 0;
 	widthSRAMCellNMOS = 2.08;	/* Default NMOS width in SRAM cells is 2.08 (from CACTI) */
 	widthSRAMCellPMOS = 1.23;	/* Default PMOS width in SRAM cells is 1.23 (from CACTI) */
+	gcType = gc_3T;
+	customCurrentOnNmos[0] = -1;
+	customCurrentOnPmos[0] = -1;
+	customCurrentOffNmos[0] = -1;
+	customCurrentOffPmos[0] = -1;
+	customCurrentOnNmos[1] = -1;
+	customCurrentOnPmos[1] = -1;
+	customCurrentOffNmos[1] = -1;
+	customCurrentOffPmos[1] = -1;
+	customCurrentOnNmos[2] = -1;
+	customCurrentOnPmos[2] = -1;
+	customCurrentOffNmos[2] = -1;
+	customCurrentOffPmos[2] = -1;
 
 	/*For memristors */
 	readFloating = false;
@@ -313,6 +328,16 @@ void MemCell::ReadCellFromFile(const string & inputFile)
 			continue;
 		}
 
+		if (!strncmp("-AccessCMOSWidth2", line, strlen("-AccessCMOSWidth2"))) {
+			sscanf(line, "-AccessCMOSWidth2 (F): %lf", &widthAccessCMOS2);
+			continue;
+		}
+
+		if (!strncmp("-AccessCMOSWidth1", line, strlen("-AccessCMOSWidth1"))) {
+			sscanf(line, "-AccessCMOSWidth1 (F): %lf", &widthAccessCMOS1);
+			continue;
+		}
+
 		if (!strncmp("-AccessCMOSWidth", line, strlen("-AccessCMOSWidth"))) {
 			if (accessType != CMOS_access)
 				cout << "Warning: The input of CMOS access transistor width is ignored because the cell is not CMOS-accessed." << endl;
@@ -427,13 +452,87 @@ void MemCell::ReadCellFromFile(const string & inputFile)
 		}
 
 		if (!strncmp("-Temperature", line, strlen("-Temperature"))) {
-			if (memCellType != eDRAM || memCellType != gcDRAM)
+			if (memCellType != eDRAM && memCellType != gcDRAM)
 				cout << "Warning: The input of temperature is ignored because the cell is not eDRAM." << endl;
 			else
 				sscanf(line, "-Temperature (K): %lf", &temperature);
 			continue;
 		}
+
+		if (!strncmp("-GainCellType", line, strlen("-GainCellType"))) {
+			char tmp[256];
+			sscanf(line, "-GainCellType: %s", tmp);
+			if (!strcmp(tmp, "3T"))
+				gcType = gc_3T;
+			else
+				gcType = gc_2T;
+			continue;
+		}
+
+		if (!strncmp("-CurrentOnNmos", line, strlen("-CurrentOnNmos"))) {
+			sscanf(line, "-CurrentOnNmos (A/m): %lf", &customCurrentOnNmos[0]);
+			continue;
+		}
+
+		if (!strncmp("-CurrentOnPmos", line, strlen("-CurrentOnPmos"))) {
+			sscanf(line, "-CurrentOnPmos (A/m): %lf", &customCurrentOnPmos[0]);
+			continue;
+		}
+
+		if (!strncmp("-CurrentOffNmos", line, strlen("-CurrentOffNmos"))) {
+			sscanf(line, "-CurrentOffNmos (A/m): %lf", &customCurrentOffNmos[0]);
+			continue;
+		}
+
+		if (!strncmp("-CurrentOffPmos", line, strlen("-CurrentOffPmos"))) {
+			sscanf(line, "-CurrentOffPmos (A/m): %lf", &customCurrentOffPmos[0]);
+			continue;
+		}
+
+		if (!strncmp("-CurrentOnNmos1", line, strlen("-CurrentOnNmos1"))) {
+			sscanf(line, "-CurrentOnNmos1 (A/m): %lf", &customCurrentOnNmos[1]);
+			continue;
+		}
+
+		if (!strncmp("-CurrentOnPmos1", line, strlen("-CurrentOnPmos1"))) {
+			sscanf(line, "-CurrentOnPmos1 (A/m): %lf", &customCurrentOnPmos[1]);
+			continue;
+		}
+
+		if (!strncmp("-CurrentOffNmos1", line, strlen("-CurrentOffNmos1"))) {
+			sscanf(line, "-CurrentOffNmos1 (A/m): %lf", &customCurrentOffNmos[1]);
+			continue;
+		}
+
+		if (!strncmp("-CurrentOffPmos1", line, strlen("-CurrentOffPmos1"))) {
+			sscanf(line, "-CurrentOffPmos1 (A/m): %lf", &customCurrentOffPmos[1]);
+			continue;
+		}
+
+		if (!strncmp("-CurrentOnNmos2", line, strlen("-CurrentOnNmos2"))) {
+			sscanf(line, "-CurrentOnNmos2 (A/m): %lf", &customCurrentOnNmos[2]);
+			continue;
+		}
+
+		if (!strncmp("-CurrentOnPmos2", line, strlen("-CurrentOnPmos2"))) {
+			sscanf(line, "-CurrentOnPmos2 (A/m): %lf", &customCurrentOnPmos[2]);
+			continue;
+		}
+
+		if (!strncmp("-CurrentOffNmos2", line, strlen("-CurrentOffNmos2"))) {
+			sscanf(line, "-CurrentOffNmos2 (A/m): %lf", &customCurrentOffNmos[2]);
+			continue;
+		}
+
+		if (!strncmp("-CurrentOffPmos2", line, strlen("-CurrentOffPmos2"))) {
+			sscanf(line, "-CurrentOffPmos2 (A/m): %lf", &customCurrentOffPmos[2]);
+			continue;
+		}
 	}
+
+	/* For gcDRAM cells with a single AccessCMOSWidth, default transistor 1 and 2 to the same width */
+	if (widthAccessCMOS1 == 0) widthAccessCMOS1 = widthAccessCMOS;
+	if (widthAccessCMOS2 == 0) widthAccessCMOS2 = widthAccessCMOS;
 
 	fclose(fp);
 }

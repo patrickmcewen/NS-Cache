@@ -47,6 +47,8 @@ using namespace std;
 InputParameter *inputParameter;
 Technology *tech;
 Technology *devtech;
+Technology *devtech1;
+Technology *devtech2;
 MemCell *cell;
 Wire *localWire;
 Wire *globalWire;
@@ -302,10 +304,26 @@ int main(int argc, char *argv[])
 
         /* In most cases device technology is the same as the peripheral technology. */
         devtech = tech;
+        devtech1 = tech;
+        devtech2 = tech;
 
         if (cell->memCellType == eDRAM && false) {
             devtech = new Technology();
             devtech->Initialize(inputParameter->processNode, EDRAM, inputParameter);
+        }
+
+        if (cell->memCellType == gcDRAM) {
+            devtech = new Technology();
+            devtech->Initialize(inputParameter->processNodeCell, inputParameter->deviceRoadmap, inputParameter);
+            devtech->OverrideCurrentsFromCell(cell, 0);
+
+            devtech1 = new Technology();
+            devtech1->Initialize(inputParameter->processNodeCell1, inputParameter->deviceRoadmap, inputParameter);
+            devtech1->OverrideCurrentsFromCell(cell, 1);
+
+            devtech2 = new Technology();
+            devtech2->Initialize(inputParameter->processNodeCell2, inputParameter->deviceRoadmap, inputParameter);
+            devtech2->OverrideCurrentsFromCell(cell, 2);
         }
 
         if (cellIdx == 0) // Print once only

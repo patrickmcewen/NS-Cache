@@ -16,6 +16,8 @@
 extern InputParameter *inputParameter;
 extern Technology *tech;
 extern Technology *devtech;
+extern Technology *devtech1; // unused except for gcDRAM
+extern Technology *devtech2; // unused except for gcDRAM (3T)
 extern MemCell *cell;
 extern Technology *gtech;
 extern Wire *localWire;		/* The wire type of local interconnects (for example, wire in subarray) */

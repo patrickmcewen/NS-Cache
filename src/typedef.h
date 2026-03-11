@@ -32,6 +32,12 @@ enum MemCellType
 	gcDRAM,
 	FeRAM
 };
+enum GainCellType
+{
+	gc_2T,	/* 2-transistor gain cell (shared read/write path) */
+	gc_3T	/* 3-transistor gain cell (split read/write path) */
+};
+
 enum CellAccessType
 {
 	CMOS_access,

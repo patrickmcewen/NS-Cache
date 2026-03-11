@@ -1603,7 +1603,7 @@ void Result::printCsvHeader(ofstream &outputFile) {
 	outputFile << "CacheArea_um2,";
 	outputFile << "HitLatency_ns,MissLatency_ns,WriteLatency_ns,RefreshLatency_ns,";
 	outputFile << "HitDynamicEnergy_nJ,MissDynamicEnergy_nJ,WriteDynamicEnergy_nJ,RefreshDynamicEnergy_nJ,";
-	outputFile << "Leakage_mW,RefreshPower_W,";
+	outputFile << "Leakage_mW,RefreshPower_W,CacheAvailability_pct,RetentionTime_us,";
 
 	/* Per-array block (data then tag) */
 	for (const char *prefix : {"Data_", "Tag_"}) {
@@ -1901,6 +1901,13 @@ void Result::printAsCacheToCsvFile(Result &tagResult, CacheAccessMode cacheAcces
         if (cell->memCellType == eDRAM || cell->memCellType == gcDRAM) {
             outputFile << TO_WATT(bank->refreshDynamicEnergy / (cell->retentionTime)) << ",";
         } else {
+            outputFile << "0,";
+        }
+        if (cell->memCellType == eDRAM || cell->memCellType == gcDRAM) {
+            outputFile << ((cell->retentionTime - MAX(tagResult.bank->refreshLatency, bank->refreshLatency)) / cell->retentionTime) * 100.0 << ",";
+            outputFile << cell->retentionTime * 1e6 << ",";
+        } else {
+            outputFile << "100,";
             outputFile << "0,";
         }
 		printToCsvFile(outputFile);

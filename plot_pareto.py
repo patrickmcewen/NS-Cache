@@ -24,34 +24,37 @@ Z_LABELS = ["Hit Latency (ns)",  "Write Latency (ns)", "Cache Area (µm²)"]
 MAT_Z_COLS   = ["Data_ReadLatency_ns",   "Data_WriteLatency_ns",   "Data_MatArea_um2"]
 MAT_Z_LABELS = ["Mat Read Latency (ns)", "Mat Write Latency (ns)", "Mat Area (µm²)"]
 
+# ── Cache-level energy/power plot axes ────────────────────────────────────────
+CACHE_ENERGY_Z_COLS   = ["HitDynamicEnergy_nJ",    "WriteDynamicEnergy_nJ",    "Leakage_mW"]
+CACHE_ENERGY_Z_LABELS = ["Hit Dynamic Energy (nJ)", "Write Dynamic Energy (nJ)", "Cache Leakage Power (mW)"]
 
-def log10_ticks(data):
-    """Ticks at integer powers of 10 plus actual min/max, labelled as values."""
-    vmin, vmax = data.min(), data.max()
-    lo = int(np.floor(np.log10(vmin)))
-    hi = int(np.ceil(np.log10(vmax)))
-    # Integer power-of-10 positions
-    power_ticks = np.arange(lo, hi + 1, dtype=float)
-    # Add actual min and max positions (in log10 space)
-    ticks = np.unique(np.concatenate([power_ticks, [np.log10(vmin), np.log10(vmax)]]))
+# ── Mat-level energy/power plot axes ──────────────────────────────────────────
+MAT_ENERGY_Z_COLS   = ["Data_ReadDynamicEnergy_pJ",   "Data_WriteDynamicEnergy_pJ",   "Data_Leakage_mW"]
+MAT_ENERGY_Z_LABELS = ["Mat Read Energy (pJ)",         "Mat Write Energy (pJ)",         "Mat Leakage Power (mW)"]
 
-    def fmt(v):
-        # Format actual value: use scientific if very large/small, else decimal
-        if v == 0:
-            return "0"
-        if abs(v) >= 1e4 or abs(v) < 1e-2:
-            return f"{v:.2e}"
-        return f"{v:.3g}"
+# ── Refresh energy + cache availability plot axes ─────────────────────────────
+REFRESH_Z_COLS     = ["RefreshDynamicEnergy_nJ",      "CacheAvailability_pct"]
+REFRESH_Z_LABELS   = ["Refresh Dynamic Energy (nJ)",  "Cache Availability (%)"]
+REFRESH_MINIMIZE   = [True,                            False]   # availability is maximized
+REFRESH_LOG_SCALE  = [True,                            False]   # availability is linear (percentage)
 
-    labels = []
-    for t in ticks:
-        v = 10 ** t
-        # Show as 10^x for exact integer powers, else show actual value
-        if abs(t - round(t)) < 1e-9:
-            labels.append(f"$10^{{{int(round(t))}}}$")
-        else:
-            labels.append(fmt(v))
-    return ticks, labels
+
+def uniform_ticks(data, log_scale, n=5):
+    """n evenly spaced ticks across the data range, in the plot coordinate space."""
+    if log_scale:
+        lmin, lmax = np.log10(data.min()), np.log10(data.max())
+        positions = np.linspace(lmin, lmax, n)
+        labels = []
+        for p in positions:
+            v = 10 ** p
+            if abs(v) >= 1e4 or abs(v) < 1e-2:
+                labels.append(f"{v:.2e}")
+            else:
+                labels.append(f"{v:.3g}")
+    else:
+        positions = np.linspace(data.min(), data.max(), n)
+        labels = [f"{v:.3g}" for v in positions]
+    return positions, labels
 
 
 def pow2_ticks(data):
@@ -111,11 +114,13 @@ def main(csv_path):
         x, y, z = x[valid], y[valid], z[valid]
 
         lx, ly, lz = np.log10(x), np.log10(y), np.log10(z)
-        sc = ax.scatter(lx, ly, lz, c=lz, cmap="viridis", s=20, alpha=0.7)
+        sc = ax.scatter(lx, ly, lz, c=lz, cmap="viridis_r", s=20, alpha=0.7)
+        bi = np.argmin(lz)
+        ax.scatter([lx[bi]], [ly[bi]], [lz[bi]], c="red", marker="*", s=120, zorder=5)
 
         xvals, xlabels = pow2_ticks(x)
         yvals, ylabels = pow2_ticks(y)
-        zticks, zlabels = log10_ticks(z)
+        zticks, zlabels = uniform_ticks(z, log_scale=True)
         ax.set_xticks(np.log10(xvals)); ax.set_xticklabels(xlabels, fontsize=7)
         ax.set_yticks(np.log10(yvals)); ax.set_yticklabels(ylabels, fontsize=7)
         ax.set_zticks(zticks);          ax.set_zticklabels(zlabels, fontsize=7)
@@ -125,11 +130,8 @@ def main(csv_path):
         ax.set_zlabel(z_label, fontsize=8, labelpad=8)
         ax.set_title(z_label,  fontsize=10)
 
-        # Colorbar: show actual values as 10^x ticks
-        cb_ticks, cb_labels = log10_ticks(z)
         cb = fig.colorbar(sc, ax=ax, shrink=0.5, pad=0.1, label=z_label)
-        cb.set_ticks(cb_ticks)
-        cb.set_ticklabels(cb_labels)
+        cb.set_ticks(zticks); cb.set_ticklabels(zlabels)
 
     fig.suptitle(f"Pareto Front — {cfg_name}", fontsize=13)
     plt.tight_layout()
@@ -148,12 +150,13 @@ def main(csv_path):
         valid = (x > 0) & (y > 0) & (z > 0)
         xi, yi, zi = x[valid], y[valid], z[valid]
 
-        sc = ax2.scatter(xi, yi, c=np.log10(zi), cmap="viridis", s=40, alpha=0.8)
+        ticks, labels = uniform_ticks(zi, log_scale=True)
+        sc = ax2.scatter(xi, yi, c=np.log10(zi), cmap="viridis_r", s=40, alpha=0.8)
+        bi = np.argmin(zi)
+        ax2.scatter([xi[bi]], [yi[bi]], c="red", marker="*", s=200, zorder=5)
 
-        cb_ticks, cb_labels = log10_ticks(zi)
         cb = fig2.colorbar(sc, ax=ax2, label=z_label)
-        cb.set_ticks(cb_ticks)
-        cb.set_ticklabels(cb_labels)
+        cb.set_ticks(ticks); cb.set_ticklabels(labels)
 
         set_pow2_axis(ax2, xi, yi)
         ax2.tick_params(axis="both", labelsize=8)
@@ -181,11 +184,13 @@ def main(csv_path):
         x, y, z = x[valid], y[valid], z[valid]
 
         lx, ly, lz = np.log10(x), np.log10(y), np.log10(z)
-        sc = ax.scatter(lx, ly, lz, c=lz, cmap="viridis", s=20, alpha=0.7)
+        sc = ax.scatter(lx, ly, lz, c=lz, cmap="viridis_r", s=20, alpha=0.7)
+        bi = np.argmin(lz)
+        ax.scatter([lx[bi]], [ly[bi]], [lz[bi]], c="red", marker="*", s=120, zorder=5)
 
         xvals, xlabels = pow2_ticks(x)
         yvals, ylabels = pow2_ticks(y)
-        zticks, zlabels = log10_ticks(z)
+        zticks, zlabels = uniform_ticks(z, log_scale=True)
         ax.set_xticks(np.log10(xvals)); ax.set_xticklabels(xlabels, fontsize=7)
         ax.set_yticks(np.log10(yvals)); ax.set_yticklabels(ylabels, fontsize=7)
         ax.set_zticks(zticks);          ax.set_zticklabels(zlabels, fontsize=7)
@@ -195,10 +200,8 @@ def main(csv_path):
         ax.set_zlabel(z_label, fontsize=8, labelpad=8)
         ax.set_title(z_label,  fontsize=10)
 
-        cb_ticks, cb_labels = log10_ticks(z)
         cb = fig3.colorbar(sc, ax=ax, shrink=0.5, pad=0.1, label=z_label)
-        cb.set_ticks(cb_ticks)
-        cb.set_ticklabels(cb_labels)
+        cb.set_ticks(zticks); cb.set_ticklabels(zlabels)
 
     fig3.suptitle(f"Pareto Front (Mat Level) — {cfg_name}", fontsize=13)
     plt.tight_layout()
@@ -217,12 +220,13 @@ def main(csv_path):
         valid = (x > 0) & (y > 0) & (z > 0)
         xi, yi, zi = x[valid], y[valid], z[valid]
 
-        sc = ax4.scatter(xi, yi, c=np.log10(zi), cmap="viridis", s=40, alpha=0.8)
+        ticks, labels = uniform_ticks(zi, log_scale=True)
+        sc = ax4.scatter(xi, yi, c=np.log10(zi), cmap="viridis_r", s=40, alpha=0.8)
+        bi = np.argmin(zi)
+        ax4.scatter([xi[bi]], [yi[bi]], c="red", marker="*", s=200, zorder=5)
 
-        cb_ticks, cb_labels = log10_ticks(zi)
         cb = fig4.colorbar(sc, ax=ax4, label=z_label)
-        cb.set_ticks(cb_ticks)
-        cb.set_ticklabels(cb_labels)
+        cb.set_ticks(ticks); cb.set_ticklabels(labels)
 
         set_pow2_axis(ax4, xi, yi)
         ax4.tick_params(axis="both", labelsize=8)
@@ -236,6 +240,222 @@ def main(csv_path):
     out_path4 = os.path.join(plots_dir, "pareto_mat_2d.png")
     plt.savefig(out_path4, dpi=150, bbox_inches="tight")
     print(f"Saved: {out_path4}")
+
+    # ── Cache-level energy/power 3D plots ─────────────────────────────────────
+    fig5 = plt.figure(figsize=(18, 6))
+
+    for idx, (z_col, z_label) in enumerate(zip(CACHE_ENERGY_Z_COLS, CACHE_ENERGY_Z_LABELS)):
+        ax = fig5.add_subplot(1, 3, idx + 1, projection="3d")
+
+        x = pareto[X_COL].to_numpy(dtype=float)
+        y = pareto[Y_COL].to_numpy(dtype=float)
+        z = pareto[z_col].to_numpy(dtype=float)
+        valid = (x > 0) & (y > 0) & (z > 0)
+        x, y, z = x[valid], y[valid], z[valid]
+
+        lx, ly, lz = np.log10(x), np.log10(y), np.log10(z)
+        sc = ax.scatter(lx, ly, lz, c=lz, cmap="viridis_r", s=20, alpha=0.7)
+        bi = np.argmin(lz)
+        ax.scatter([lx[bi]], [ly[bi]], [lz[bi]], c="red", marker="*", s=120, zorder=5)
+
+        xvals, xlabels = pow2_ticks(x)
+        yvals, ylabels = pow2_ticks(y)
+        zticks, zlabels = uniform_ticks(z, log_scale=True)
+        ax.set_xticks(np.log10(xvals)); ax.set_xticklabels(xlabels, fontsize=7)
+        ax.set_yticks(np.log10(yvals)); ax.set_yticklabels(ylabels, fontsize=7)
+        ax.set_zticks(zticks);          ax.set_zticklabels(zlabels, fontsize=7)
+
+        ax.set_xlabel(X_COL,   fontsize=8, labelpad=8)
+        ax.set_ylabel(Y_COL,   fontsize=8, labelpad=8)
+        ax.set_zlabel(z_label, fontsize=8, labelpad=8)
+        ax.set_title(z_label,  fontsize=10)
+
+        cb = fig5.colorbar(sc, ax=ax, shrink=0.5, pad=0.1, label=z_label)
+        cb.set_ticks(zticks); cb.set_ticklabels(zlabels)
+
+    fig5.suptitle(f"Pareto Front (Cache Energy/Power) — {cfg_name}", fontsize=13)
+    plt.tight_layout()
+    out_path5 = os.path.join(plots_dir, "pareto_cache_energy_3d.png")
+    plt.savefig(out_path5, dpi=150, bbox_inches="tight")
+    print(f"Saved: {out_path5}")
+
+    # ── Cache-level energy/power 2D plots ─────────────────────────────────────
+    fig6, axes = plt.subplots(1, 3, figsize=(18, 5))
+
+    x = pareto[X_COL].to_numpy(dtype=float)
+    y = pareto[Y_COL].to_numpy(dtype=float)
+
+    for ax6, z_col, z_label in zip(axes, CACHE_ENERGY_Z_COLS, CACHE_ENERGY_Z_LABELS):
+        z = pareto[z_col].to_numpy(dtype=float)
+        valid = (x > 0) & (y > 0) & (z > 0)
+        xi, yi, zi = x[valid], y[valid], z[valid]
+
+        ticks, labels = uniform_ticks(zi, log_scale=True)
+        sc = ax6.scatter(xi, yi, c=np.log10(zi), cmap="viridis_r", s=40, alpha=0.8)
+        bi = np.argmin(zi)
+        ax6.scatter([xi[bi]], [yi[bi]], c="red", marker="*", s=200, zorder=5)
+
+        cb = fig6.colorbar(sc, ax=ax6, label=z_label)
+        cb.set_ticks(ticks); cb.set_ticklabels(labels)
+
+        set_pow2_axis(ax6, xi, yi)
+        ax6.tick_params(axis="both", labelsize=8)
+        ax6.set_xlabel(X_COL,   fontsize=9)
+        ax6.set_ylabel(Y_COL,   fontsize=9)
+        ax6.set_title(z_label,  fontsize=10)
+        ax6.grid(True, which="major", linestyle="--", alpha=0.4)
+
+    fig6.suptitle(f"Pareto Front (Cache Energy/Power) — {cfg_name}", fontsize=13)
+    plt.tight_layout()
+    out_path6 = os.path.join(plots_dir, "pareto_cache_energy_2d.png")
+    plt.savefig(out_path6, dpi=150, bbox_inches="tight")
+    print(f"Saved: {out_path6}")
+
+    # ── Mat-level energy/power 3D plots ───────────────────────────────────────
+    fig7 = plt.figure(figsize=(18, 6))
+
+    for idx, (z_col, z_label) in enumerate(zip(MAT_ENERGY_Z_COLS, MAT_ENERGY_Z_LABELS)):
+        ax = fig7.add_subplot(1, 3, idx + 1, projection="3d")
+
+        x = pareto[X_COL].to_numpy(dtype=float)
+        y = pareto[Y_COL].to_numpy(dtype=float)
+        z = pareto[z_col].to_numpy(dtype=float)
+        valid = (x > 0) & (y > 0) & (z > 0)
+        x, y, z = x[valid], y[valid], z[valid]
+
+        lx, ly, lz = np.log10(x), np.log10(y), np.log10(z)
+        sc = ax.scatter(lx, ly, lz, c=lz, cmap="viridis_r", s=20, alpha=0.7)
+        bi = np.argmin(lz)
+        ax.scatter([lx[bi]], [ly[bi]], [lz[bi]], c="red", marker="*", s=120, zorder=5)
+
+        xvals, xlabels = pow2_ticks(x)
+        yvals, ylabels = pow2_ticks(y)
+        zticks, zlabels = uniform_ticks(z, log_scale=True)
+        ax.set_xticks(np.log10(xvals)); ax.set_xticklabels(xlabels, fontsize=7)
+        ax.set_yticks(np.log10(yvals)); ax.set_yticklabels(ylabels, fontsize=7)
+        ax.set_zticks(zticks);          ax.set_zticklabels(zlabels, fontsize=7)
+
+        ax.set_xlabel(X_COL,   fontsize=8, labelpad=8)
+        ax.set_ylabel(Y_COL,   fontsize=8, labelpad=8)
+        ax.set_zlabel(z_label, fontsize=8, labelpad=8)
+        ax.set_title(z_label,  fontsize=10)
+
+        cb = fig7.colorbar(sc, ax=ax, shrink=0.5, pad=0.1, label=z_label)
+        cb.set_ticks(zticks); cb.set_ticklabels(zlabels)
+
+    fig7.suptitle(f"Pareto Front (Mat Energy/Power) — {cfg_name}", fontsize=13)
+    plt.tight_layout()
+    out_path7 = os.path.join(plots_dir, "pareto_mat_energy_3d.png")
+    plt.savefig(out_path7, dpi=150, bbox_inches="tight")
+    print(f"Saved: {out_path7}")
+
+    # ── Mat-level energy/power 2D plots ───────────────────────────────────────
+    fig8, axes = plt.subplots(1, 3, figsize=(18, 5))
+
+    x = pareto[X_COL].to_numpy(dtype=float)
+    y = pareto[Y_COL].to_numpy(dtype=float)
+
+    for ax8, z_col, z_label in zip(axes, MAT_ENERGY_Z_COLS, MAT_ENERGY_Z_LABELS):
+        z = pareto[z_col].to_numpy(dtype=float)
+        valid = (x > 0) & (y > 0) & (z > 0)
+        xi, yi, zi = x[valid], y[valid], z[valid]
+
+        ticks, labels = uniform_ticks(zi, log_scale=True)
+        sc = ax8.scatter(xi, yi, c=np.log10(zi), cmap="viridis_r", s=40, alpha=0.8)
+        bi = np.argmin(zi)
+        ax8.scatter([xi[bi]], [yi[bi]], c="red", marker="*", s=200, zorder=5)
+
+        cb = fig8.colorbar(sc, ax=ax8, label=z_label)
+        cb.set_ticks(ticks); cb.set_ticklabels(labels)
+
+        set_pow2_axis(ax8, xi, yi)
+        ax8.tick_params(axis="both", labelsize=8)
+        ax8.set_xlabel(X_COL,   fontsize=9)
+        ax8.set_ylabel(Y_COL,   fontsize=9)
+        ax8.set_title(z_label,  fontsize=10)
+        ax8.grid(True, which="major", linestyle="--", alpha=0.4)
+
+    fig8.suptitle(f"Pareto Front (Mat Energy/Power) — {cfg_name}", fontsize=13)
+    plt.tight_layout()
+    out_path8 = os.path.join(plots_dir, "pareto_mat_energy_2d.png")
+    plt.savefig(out_path8, dpi=150, bbox_inches="tight")
+    print(f"Saved: {out_path8}")
+
+    # ── Refresh energy / cache availability 3D plots ──────────────────────────
+    fig9 = plt.figure(figsize=(12, 6))
+
+    for idx, (z_col, z_label, minimize, log_scale) in enumerate(
+            zip(REFRESH_Z_COLS, REFRESH_Z_LABELS, REFRESH_MINIMIZE, REFRESH_LOG_SCALE)):
+        ax = fig9.add_subplot(1, 2, idx + 1, projection="3d")
+
+        x = pareto[X_COL].to_numpy(dtype=float)
+        y = pareto[Y_COL].to_numpy(dtype=float)
+        z = pareto[z_col].to_numpy(dtype=float)
+        valid = (x > 0) & (y > 0) & (z > 0)
+        x, y, z = x[valid], y[valid], z[valid]
+
+        lx, ly = np.log10(x), np.log10(y)
+        zplot  = np.log10(z) if log_scale else z
+        cmap   = "viridis_r" if minimize else "viridis"
+        sc = ax.scatter(lx, ly, zplot, c=zplot, cmap=cmap, s=20, alpha=0.7)
+        bi = np.argmin(zplot) if minimize else np.argmax(zplot)
+        ax.scatter([lx[bi]], [ly[bi]], [zplot[bi]], c="red", marker="*", s=120, zorder=5)
+
+        xvals, xlabels = pow2_ticks(x)
+        yvals, ylabels = pow2_ticks(y)
+        zticks, zlabels = uniform_ticks(z, log_scale=log_scale)
+        ax.set_xticks(np.log10(xvals)); ax.set_xticklabels(xlabels, fontsize=7)
+        ax.set_yticks(np.log10(yvals)); ax.set_yticklabels(ylabels, fontsize=7)
+        ax.set_zticks(zticks);          ax.set_zticklabels(zlabels, fontsize=7)
+
+        ax.set_xlabel(X_COL,   fontsize=8, labelpad=8)
+        ax.set_ylabel(Y_COL,   fontsize=8, labelpad=8)
+        ax.set_zlabel(z_label, fontsize=8, labelpad=8)
+        ax.set_title(z_label,  fontsize=10)
+
+        cb = fig9.colorbar(sc, ax=ax, shrink=0.5, pad=0.1, label=z_label)
+        cb.set_ticks(zticks); cb.set_ticklabels(zlabels)
+
+    fig9.suptitle(f"Pareto Front (Refresh / Availability) — {cfg_name}", fontsize=13)
+    plt.tight_layout()
+    out_path9 = os.path.join(plots_dir, "pareto_refresh_avail_3d.png")
+    plt.savefig(out_path9, dpi=150, bbox_inches="tight")
+    print(f"Saved: {out_path9}")
+
+    # ── Refresh energy / cache availability 2D plots ──────────────────────────
+    fig10, axes = plt.subplots(1, 2, figsize=(12, 5))
+
+    x = pareto[X_COL].to_numpy(dtype=float)
+    y = pareto[Y_COL].to_numpy(dtype=float)
+
+    for ax10, z_col, z_label, minimize, log_scale in zip(
+            axes, REFRESH_Z_COLS, REFRESH_Z_LABELS, REFRESH_MINIMIZE, REFRESH_LOG_SCALE):
+        z = pareto[z_col].to_numpy(dtype=float)
+        valid = (x > 0) & (y > 0) & (z > 0)
+        xi, yi, zi = x[valid], y[valid], z[valid]
+
+        ticks, labels = uniform_ticks(zi, log_scale=log_scale)
+        cmap = "viridis_r" if minimize else "viridis"
+        cval = np.log10(zi) if log_scale else zi
+        sc = ax10.scatter(xi, yi, c=cval, cmap=cmap, s=40, alpha=0.8)
+        bi = np.argmin(zi) if minimize else np.argmax(zi)
+        ax10.scatter([xi[bi]], [yi[bi]], c="red", marker="*", s=200, zorder=5)
+
+        cb = fig10.colorbar(sc, ax=ax10, label=z_label)
+        cb.set_ticks(ticks); cb.set_ticklabels(labels)
+
+        set_pow2_axis(ax10, xi, yi)
+        ax10.tick_params(axis="both", labelsize=8)
+        ax10.set_xlabel(X_COL,   fontsize=9)
+        ax10.set_ylabel(Y_COL,   fontsize=9)
+        ax10.set_title(z_label,  fontsize=10)
+        ax10.grid(True, which="major", linestyle="--", alpha=0.4)
+
+    fig10.suptitle(f"Pareto Front (Refresh / Availability) — {cfg_name}", fontsize=13)
+    plt.tight_layout()
+    out_path10 = os.path.join(plots_dir, "pareto_refresh_avail_2d.png")
+    plt.savefig(out_path10, dpi=150, bbox_inches="tight")
+    print(f"Saved: {out_path10}")
     #plt.show()
 
 
