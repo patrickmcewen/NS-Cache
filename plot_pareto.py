@@ -10,19 +10,19 @@ from paretoset import paretoset
 PARETO_METRICS = [
     "HitLatency_ns",
     "WriteLatency_ns",
-    "CacheArea_um2",
+    "CacheArea_mm2",
     "Leakage_mW",
 ]
 
 # ── Plot axes ─────────────────────────────────────────────────────────────────
 X_COL    = "Data_MatRows"
 Y_COL    = "Data_MatCols"
-Z_COLS   = ["HitLatency_ns",     "WriteLatency_ns",    "CacheArea_um2"]
-Z_LABELS = ["Hit Latency (ns)",  "Write Latency (ns)", "Cache Area (µm²)"]
+Z_COLS   = ["HitLatency_ns",     "WriteLatency_ns",    "CacheArea_mm2"]
+Z_LABELS = ["Hit Latency (ns)",  "Write Latency (ns)", "Cache Area (mm²)"]
 
 # ── Mat-level plot axes ────────────────────────────────────────────────────────
-MAT_Z_COLS   = ["Data_ReadLatency_ns",   "Data_WriteLatency_ns",   "Data_MatArea_um2"]
-MAT_Z_LABELS = ["Mat Read Latency (ns)", "Mat Write Latency (ns)", "Mat Area (µm²)"]
+MAT_Z_COLS   = ["Data_ReadLatency_ns",   "Data_WriteLatency_ns",   "Data_MatArea_mm2"]
+MAT_Z_LABELS = ["Mat Read Latency (ns)", "Mat Write Latency (ns)", "Mat Area (mm²)"]
 
 # ── Cache-level energy/power plot axes ────────────────────────────────────────
 CACHE_ENERGY_Z_COLS   = ["HitDynamicEnergy_nJ",    "WriteDynamicEnergy_nJ",    "Leakage_mW"]
