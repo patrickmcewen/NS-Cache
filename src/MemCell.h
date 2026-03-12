@@ -116,6 +116,7 @@ public:
     /* For eDRAM. */
     double retentionTime;           /* Cell time to data loss (us) */
     double temperature;             /* Temperature for which the cell input values are valid. */
+    bool beolEdRAM;                 /* True if eDRAM capacitor is in BEOL (stacked above transistors) */
 };
 
 #endif /* MEMCELL_H_ */

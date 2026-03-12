@@ -303,6 +303,15 @@ void Mat::Initialize(long long _numRow, long long _numColumn, bool _multipleRowP
 		capWordline += CalculateGateCap(((tech->featureSize <= 14*1e-9)? 2:1) * cell->widthAccessCMOS * devtech->featureSize, *devtech) * numColumn;
 		if(tech->featureSize <= 14 * 1e-9){ capBitline += tech->cap_draintotal * cell->widthAccessCMOS * tech->effective_width * numRow / 2;}
 		else {capBitline  += capCellAccess * numRow / 2;	/* Due to shared contact */}
+
+		if (cell->beolEdRAM) {
+			resCellAccess = CalculateOnResistance(((devtech->featureSize <= 14*1e-9)? 2:1) * cell->widthAccessCMOS * devtech->featureSize, NMOS, inputParameter->temperature, *devtech);
+			capCellAccess = CalculateDrainCap(((devtech->featureSize <= 14*1e-9)? 2:1) * cell->widthAccessCMOS * devtech->featureSize, NMOS, cell->widthInFeatureSize * devtech->featureSize, *devtech);
+			capWordline += CalculateGateCap(((devtech->featureSize <= 14*1e-9)? 2:1) * cell->widthAccessCMOS * devtech->featureSize, *devtech) * numColumn;
+			if(devtech->featureSize <= 14 * 1e-9){ capBitline += devtech->cap_draintotal * cell->widthAccessCMOS * devtech->effective_width * numRow / 2;}
+			else {capBitline  += capCellAccess * numRow / 2;	/* Due to shared contact */}
+		}
+		capBitlineRead = capBitline;  /* eDRAM/DRAM has no split read path; use same cap for precharger */
 		voltagePrecharge = devtech->vdd / 2;	/* DRAM read voltage is always half of vdd */
 	} else if(cell->memCellType == gcDRAM) {
 		// Gain Cell has Split Read and Write Paths, with different connectivity than eDRAM. Transistor indices are as follows:
@@ -1085,6 +1094,7 @@ void Mat::CalculatePower() {
 			leakage = readDynamicEnergy / DRAM_REFRESH_PERIOD * numRow;
 		} else if (cell->memCellType == gcDRAM) {
 			gcRowDecoder.CalculatePower();
+			writecharger.CalculatePower();
 			/* Codes below calculate the DRAM bitline power */
 			// TODO: Write in Major Information for Bidir Power
 			readDynamicEnergy = (capCellAccess + bitlineMux.capForPreviousPowerCalculation) * senseVoltage * devtech->vdd * numColumn;

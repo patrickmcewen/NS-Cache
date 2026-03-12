@@ -87,6 +87,7 @@ MemCell::MemCell() {
 	resistanceOffAtHalfReadVoltage = 0;
 
     retentionTime = invalid_value;
+    beolEdRAM = false;
 }
 
 MemCell::~MemCell() {
@@ -448,6 +449,12 @@ void MemCell::ReadCellFromFile(const string & inputFile)
 			sscanf(line, "-RetentionTime (us): %lf", &retentionTime);
             retentionTime /= 1e6;
 			
+			continue;
+		}
+
+		if (!strncmp("-BEOLeDRAM", line, strlen("-BEOLeDRAM"))) {
+			sscanf(line, "-BEOLeDRAM: %s", tmp);
+			beolEdRAM = !strcmp(tmp, "True");
 			continue;
 		}
 

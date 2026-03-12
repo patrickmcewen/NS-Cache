@@ -311,6 +311,11 @@ int main(int argc, char *argv[])
             devtech = new Technology();
             devtech->Initialize(inputParameter->processNode, EDRAM, inputParameter);
         }
+		if (cell->memCellType == eDRAM && cell->beolEdRAM) {
+			devtech = new Technology();
+			devtech->Initialize(inputParameter->processNodeCell, inputParameter->deviceRoadmap, inputParameter);
+			devtech->OverrideCurrentsFromCell(cell, 0);
+		}
 
         if (cell->memCellType == gcDRAM) {
             devtech = new Technology();
