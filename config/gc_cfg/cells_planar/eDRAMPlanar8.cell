@@ -1,7 +1,7 @@
 -MemCellType: eDRAM
 
 
--CellArea (F^2): 60
+-CellArea (F^2): 6
 -CellAspectRatio: 1.46
 
 -ReadMode: voltage

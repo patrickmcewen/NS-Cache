@@ -238,6 +238,10 @@ void Mat::Initialize(long long _numRow, long long _numColumn, bool _multipleRowP
 		lenBitline = ((double)(numRow+2) * cell->heightInFeatureSize * devtech->featureSize)/2; //Add Reference on Both Ends
 		lenWordline = (double)(numColumn) * cell->widthInFeatureSize * devtech->featureSize; // change cell dimensions to be based on device technology
 	}
+	if(cell->memCellType == eDRAM && cell->beolEdRAM) {
+		lenBitline = ((double)(numRow) * cell->heightInFeatureSize * devtech->featureSize); 
+		lenWordline = (double)(numColumn) * cell->widthInFeatureSize * devtech->featureSize;
+	}
 	/* Add stitching overhead if necessary */
 	if (cell->stitching) {
 		lenWordline += ((numColumn - 1) / cell->stitching + 1) * STITCHING_OVERHEAD * devtech->featureSize;
@@ -297,18 +301,21 @@ void Mat::Initialize(long long _numRow, long long _numColumn, bool _multipleRowP
 		else {capBitline  += capCellAccess * numRow / 2;	/* Due to shared contact */}
 		voltagePrecharge = tech->vdd / 2;	/* SRAM read voltage is always half of vdd */
 	} else if (cell->memCellType == DRAM || cell->memCellType == eDRAM) {
-		/* DRAM and eDRAM only has one access transistors */
-		resCellAccess = CalculateOnResistance(((tech->featureSize <= 14*1e-9)? 2:1) * cell->widthAccessCMOS * devtech->featureSize, NMOS, inputParameter->temperature, *devtech);
-		capCellAccess = CalculateDrainCap(((tech->featureSize <= 14*1e-9)? 2:1) * cell->widthAccessCMOS * devtech->featureSize, NMOS, cell->widthInFeatureSize * devtech->featureSize, *devtech);
-		capWordline += CalculateGateCap(((tech->featureSize <= 14*1e-9)? 2:1) * cell->widthAccessCMOS * devtech->featureSize, *devtech) * numColumn;
-		if(tech->featureSize <= 14 * 1e-9){ capBitline += tech->cap_draintotal * cell->widthAccessCMOS * tech->effective_width * numRow / 2;}
-		else {capBitline  += capCellAccess * numRow / 2;	/* Due to shared contact */}
-
+		/* DRAM and eDRAM only has one access transistor */
 		if (cell->beolEdRAM) {
+			/* BEOL eDRAM: capacitor stacked above transistors; cell transistors are at devtech (e.g. 60nm).
+			 * Use devtech's FinFET factor — peripheral tech factor is wrong here and causes crashes
+			 * when widthInFeatureSize * devtech->featureSize < 3 * devtech->featureSize. */
 			resCellAccess = CalculateOnResistance(((devtech->featureSize <= 14*1e-9)? 2:1) * cell->widthAccessCMOS * devtech->featureSize, NMOS, inputParameter->temperature, *devtech);
 			capCellAccess = CalculateDrainCap(((devtech->featureSize <= 14*1e-9)? 2:1) * cell->widthAccessCMOS * devtech->featureSize, NMOS, cell->widthInFeatureSize * devtech->featureSize, *devtech);
 			capWordline += CalculateGateCap(((devtech->featureSize <= 14*1e-9)? 2:1) * cell->widthAccessCMOS * devtech->featureSize, *devtech) * numColumn;
 			if(devtech->featureSize <= 14 * 1e-9){ capBitline += devtech->cap_draintotal * cell->widthAccessCMOS * devtech->effective_width * numRow / 2;}
+			else {capBitline  += capCellAccess * numRow / 2;	/* Due to shared contact */}
+		} else {
+			resCellAccess = CalculateOnResistance(((tech->featureSize <= 14*1e-9)? 2:1) * cell->widthAccessCMOS * devtech->featureSize, NMOS, inputParameter->temperature, *devtech);
+			capCellAccess = CalculateDrainCap(((tech->featureSize <= 14*1e-9)? 2:1) * cell->widthAccessCMOS * devtech->featureSize, NMOS, cell->widthInFeatureSize * devtech->featureSize, *devtech);
+			capWordline += CalculateGateCap(((tech->featureSize <= 14*1e-9)? 2:1) * cell->widthAccessCMOS * devtech->featureSize, *devtech) * numColumn;
+			if(tech->featureSize <= 14 * 1e-9){ capBitline += tech->cap_draintotal * cell->widthAccessCMOS * tech->effective_width * numRow / 2;}
 			else {capBitline  += capCellAccess * numRow / 2;	/* Due to shared contact */}
 		}
 		capBitlineRead = capBitline;  /* eDRAM/DRAM has no split read path; use same cap for precharger */
