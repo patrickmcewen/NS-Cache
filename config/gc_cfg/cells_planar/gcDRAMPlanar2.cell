@@ -1,0 +1,27 @@
+-MemCellType: gcDRAM
+
+
+-CellArea (F^2): 60
+-CellAspectRatio: 1
+
+-ReadMode: voltage
+
+-AccessType: CMOS
+-AccessCMOSWidth (F): 1
+-AccessCMOSWidth1 (F): 4
+
+-DRAMCellCapacitance (F): 2.500e-16
+-ResetVoltage (V): vdd
+-SetVoltage (V): vdd
+
+-MinSenseVoltage (mV): 10
+
+-RetentionTime (us): 3.114e+05
+-Temperature (K): 300
+
+-CurrentOnNmos (A/m): 23.61
+-CurrentOffNmos (A/m): 1.767e-03
+-CurrentOnNmos1 (A/m): 23.61
+-CurrentOffNmos1 (A/m): 1.767e-03
+
+-GainCellType: 2T
